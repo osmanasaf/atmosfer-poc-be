@@ -1,0 +1,14 @@
+# Spring properties
+spring:
+  application:
+    name: business-service
+
+# Discovery Server Access
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+# HTTP Server
+server:
+  port: 9000   # HTTP (Tomcat) port

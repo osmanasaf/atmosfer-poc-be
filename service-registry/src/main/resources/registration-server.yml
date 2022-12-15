@@ -1,10 +1,7 @@
-# Configure this Discovery Server
-eureka:
-  instance:
-    hostname: localhost
-  client:  # Not a client, don't register with yourself
-    registerWithEureka: false
-    fetchRegistry: false
-
-server:
-  port: 8761   # HTTP (Tomcat) port
+spring:
+  application:
+    name: registration-server
+  profiles:
+    active: test
+  config:
+    import: optional:configserver:http://root:s3cr3t@localhost:8888

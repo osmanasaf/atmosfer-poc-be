@@ -1,14 +1,7 @@
-# Spring properties
 spring:
   application:
     name: business-service
-
-# Discovery Server Access
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-
-# HTTP Server
-server:
-  port: 9000   # HTTP (Tomcat) port
+  profiles:
+    active: test
+  config:
+    import: optional:configserver:http://root:s3cr3t@localhost:8888
