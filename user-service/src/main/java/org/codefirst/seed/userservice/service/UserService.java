@@ -1,6 +1,6 @@
 package org.codefirst.seed.userservice.service;
 
-import jakarta.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.codefirst.seed.userservice.entity.User;
 import org.codefirst.seed.userservice.repository.UserRepository;
