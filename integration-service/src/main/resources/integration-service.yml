@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: integration-service
+  profiles:
+    active: test
+  config:
+    import: optional:configserver:http://root:s3cr3t@localhost:8888
