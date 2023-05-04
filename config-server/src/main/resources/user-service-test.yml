@@ -21,3 +21,9 @@ eureka:
 # HTTP Server
 server:
   port: 9001   # HTTP (Tomcat) port
+
+ldap:
+  url: ldap://18.157.161.104:389
+  partitionSuffix: dc=atmosfer,dc=local
+  principal: cn=admin,dc=atmosfer,dc=local
+  password: ldapadmin
