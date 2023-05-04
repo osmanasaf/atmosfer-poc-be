@@ -2,6 +2,10 @@
 spring:
   application:
     name: business-service
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      topic: logs
 
 # Discovery Server Access
 eureka:
