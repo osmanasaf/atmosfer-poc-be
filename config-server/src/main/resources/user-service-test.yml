@@ -31,3 +31,6 @@ ldap:
   partitionSuffix: dc=atmosfer,dc=local
   principal: cn=admin,dc=atmosfer,dc=local
   password: ldapadmin
+
+jwt:
+  secret: atmosfer-poc
