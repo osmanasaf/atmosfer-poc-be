@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
-import org.codefirst.seed.userservice.dto.AdminGetTokenDto;
+import org.codefirst.seed.userservice.dto.LoginDto;
 import org.codefirst.seed.userservice.dto.LdapUser;
 import org.codefirst.seed.userservice.util.CryptUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,15 +21,15 @@ public class JwtTokenUtil {
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
     @Value("${jwt.secret}")
     private String secret;
-    private final LdapService ldapService;
-    public String generateToken(AdminGetTokenDto dto) {
-        LdapUser ldapUser = ldapService.search(dto.getUsername()).get(0);
-        if(CryptUtil.matches(dto.getPassword(), ldapUser.getPassword())) {
+
+    public String generateToken(LdapUser ldapUser) {
+        try {
             Map<String, Object> claims = new HashMap<>();
             claims.put("role", ldapUser.getOu());
-            return doGenerateToken(claims, dto.getUsername());
+            return doGenerateToken(claims, ldapUser.getMail());
+        } catch (Exception e) {
+            throw new RuntimeException("Bad Credentials");
         }
-        throw new RuntimeException("Bad Credentials");
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {

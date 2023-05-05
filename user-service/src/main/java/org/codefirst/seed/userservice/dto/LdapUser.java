@@ -11,6 +11,7 @@ public class LdapUser {
     private String cn;
     private AdminType ou;
     private String password;
+    private String mail;
     public static LdapUser createFromAttrs(Attributes attrs) {
         LdapUser ldapUser = new LdapUser();
         try {
@@ -20,6 +21,7 @@ public class LdapUser {
             String hash = new String(bytes);
             ldapUser.setPassword(hash);
             ldapUser.setOu(AdminType.valueOf(String.valueOf(attrs.get("description").get())));
+            ldapUser.setMail(String.valueOf(attrs.get("mail").get()));
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }

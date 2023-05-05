@@ -17,7 +17,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: atmosferpoc@gmail.com
-    password: EwvAMnTC2NdTXf9
+    password: fvlugmakqudtjbds
     properties:
       mail:
         smtp:
@@ -46,15 +46,5 @@ ldap:
 jwt:
   secret: atmosfer-poc
 
-# Smtp properties
-mail:
-  host: smtp.gmail.com
-  port: 587
-  username: your_username
-  password: your_password
-  properties:
-    mail:
-      smtp:
-        auth: true
-        starttls:
-          enable: true
+base:
+  url: http://localhost:9001

@@ -2,6 +2,7 @@ package org.codefirst.seed.userservice.service;
 
 import javax.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
+import org.codefirst.seed.userservice.dto.ChangePasswordDto;
 import org.codefirst.seed.userservice.entity.User;
 import org.codefirst.seed.userservice.repository.UserRepository;
 import org.springframework.stereotype.Service;

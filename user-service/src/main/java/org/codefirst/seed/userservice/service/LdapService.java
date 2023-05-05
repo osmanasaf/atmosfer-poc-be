@@ -1,10 +1,12 @@
 package org.codefirst.seed.userservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.codefirst.seed.userservice.dto.AdminRegisterDto;
-import org.codefirst.seed.userservice.dto.LdapUser;
+import org.codefirst.seed.userservice.dto.*;
+import org.codefirst.seed.userservice.entity.OneTimePassword;
+import org.codefirst.seed.userservice.entity.PasswordResetToken;
 import org.codefirst.seed.userservice.type.AdminType;
 import org.codefirst.seed.userservice.util.CryptUtil;
+import org.codefirst.seed.userservice.util.RandomGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -13,13 +15,23 @@ import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 
 import javax.naming.Name;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class LdapService {
 
     private final LdapTemplate ldapTemplate;
+    private final MailService mailService;
+    private final PasswordResetTokenService passwordResetTokenService;
+    private final KafkaService kafkaService;
+    private final OneTimePasswordService oneTimePasswordService;
+    private final JwtTokenUtil jwtTokenUtil;
+
     @Value("${ldap.partitionSuffix}")
     private String ldapSuffix;
 
@@ -33,11 +45,7 @@ public class LdapService {
     }
 
     public void create(AdminRegisterDto dto) {
-        Name dn = LdapNameBuilder
-                .newInstance()
-                .add("ou", "newusers")
-                .add("cn", dto.getUsername())
-                .build();
+        Name dn = buildUserDn(dto.getUsername());
         DirContextAdapter context = new DirContextAdapter(dn);
 
         context.setAttributeValues(
@@ -59,10 +67,7 @@ public class LdapService {
     }
 
     public void modify(String username, AdminType ou) {
-        Name dn = LdapNameBuilder.newInstance()
-                .add("ou", "newusers")
-                .add("cn", username)
-                .build();
+        Name dn = buildUserDn(username);
         DirContextOperations context
                 = ldapTemplate.lookupContext(dn);
 
@@ -76,5 +81,94 @@ public class LdapService {
         context.setAttributeValue("description", ou.name());
 
         ldapTemplate.modifyAttributes(context);
+    }
+
+    public LdapUser getLdapUser(String username) {
+        List<LdapUser> ldapUsers = search(username);
+        if(ldapUsers.size() == 0) {
+            throw new RuntimeException("User not found");
+        }
+        return ldapUsers.get(0);
+    }
+
+    public void compareOldPassword(String ldapPassword, String password) {
+        boolean isEqual = ldapPassword.equals(password);
+        if(!isEqual) {
+            throw new RuntimeException("Password is not correct");
+        }
+    }
+
+    public void compareNewPassword(String newPassword, String oldPassword) {
+        boolean isEqual = newPassword.equals(oldPassword);
+        if(isEqual) {
+            throw new RuntimeException("New password cannot be same with old password");
+        }
+    }
+
+    public void changePassword(ChangePasswordDto changePasswordDto) {
+        LdapUser ldapUser = getLdapUser(changePasswordDto.getUsername());
+        compareOldPassword(CryptUtil.encode(changePasswordDto.getOldPassword()), ldapUser.getPassword());
+        compareNewPassword(changePasswordDto.getNewPassword(), changePasswordDto.getOldPassword());
+        updatePasswordOnLdap(ldapUser.getCn(), changePasswordDto.getNewPassword());
+    }
+
+
+    public void updatePasswordOnLdap(String username, String newPassword) {
+        Name dn = buildUserDn(username);
+        ModificationItem[] modificationItems = new ModificationItem[1];
+        modificationItems[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", CryptUtil.encode(newPassword)));
+        ldapTemplate.modifyAttributes(dn, modificationItems);
+        kafkaService.sendMessage("updatePassword", null, username);
+    }
+
+    private Name buildUserDn(String username) {
+        //neden rolü ou ile belirlemiyoruz??
+        return LdapNameBuilder.newInstance()
+                .add("ou", "newusers")
+                .add("cn", username)
+                .build();
+    }
+
+    public void forgotPassword(String username) {
+        LdapUser ldapUser = getLdapUser(username);
+        String generatedRandomPassword = RandomGenerator.generateRandomPassword();
+        mailService.sendForgotPasswordMail(ldapUser.getMail(), generatedRandomPassword);
+        kafkaService.sendMessage("sendNewPasswordLink", null, username);
+        updatePasswordOnLdap(ldapUser.getCn(), CryptUtil.encode(generatedRandomPassword));
+    }
+
+    public void sendForgotPasswordLink(String username) {
+        LdapUser ldapUser = getLdapUser(username);
+        PasswordResetToken resetPasswordToken = passwordResetTokenService.createResetPasswordToken(ldapUser);
+        String restPasswordLink = passwordResetTokenService.generateResetPasswordTokenLink(resetPasswordToken.getToken());
+        mailService.sendResetPasswordLink(ldapUser.getMail(), restPasswordLink);
+      //  kafkaService.sendMessage("sendForgotPasswordLink", null, username);
+    }
+
+    public AdminExistDto isExist(String username) {
+        List<LdapUser> users = search(username);
+        AdminExistDto dto = new AdminExistDto();
+        dto.setUsername(username);
+        dto.setExist(users.size() > 0);
+        //kafkaService.sendMessage("isAdminExist", null, username);
+        return dto;
+    }
+
+    public String smsValidation(GetOtpDto dto) {
+        LdapUser ldapUser = getLdapUser(dto.getEmail());
+        if(CryptUtil.matches(dto.getPassword(), ldapUser.getPassword())) {
+            return oneTimePasswordService.createOTP(ldapUser.getMail());
+        }
+        throw new RuntimeException("Bad Credentials");
+    }
+
+    public String login(LoginDto dto) {
+        LdapUser ldapUser = getLdapUser(dto.getUsername());
+        Optional<OneTimePassword> tokenByEmail = oneTimePasswordService.getTokenByEmail(ldapUser.getMail());
+        boolean allCredentialsAreCorrect = CryptUtil.matches(dto.getPassword(), ldapUser.getPassword()) && tokenByEmail.isPresent() && tokenByEmail.get().getOtp().equals(dto.getOtp());
+        if(allCredentialsAreCorrect) {
+          return jwtTokenUtil.generateToken(ldapUser);
+        }
+        throw new RuntimeException("Bad Credentials");
     }
 }
