@@ -8,8 +8,6 @@ import org.codefirst.seed.userservice.service.LdapService;
 import org.codefirst.seed.userservice.type.AdminType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("auth")
 @RequiredArgsConstructor
@@ -19,29 +17,42 @@ public class AuthController {
     private final KafkaService kafkaService;
     private final JwtTokenUtil jwtTokenUtil;
 
-    @GetMapping("/admin/exist/{username}")
-    public AdminExistDto isAdminExist(@PathVariable("username") String username) {
-        List<LdapUser> admins = ldapService.search(username);
-        AdminExistDto dto = new AdminExistDto();
-        dto.setUsername(username);
-        dto.setExist(admins.size() > 0);
-
-        kafkaService.sendMessage("isAdminExist", null, username);
-        return dto;
+    @GetMapping("/exist/{username}")
+    public AdminExistDto isUserExist(@PathVariable("username") String username) {
+        return ldapService.isExist(username);
     }
 
-    @PostMapping("/admin/register")
-    public void registerAdmin(@RequestBody AdminRegisterDto dto) {
+    @PostMapping("/register")
+    public void register(@RequestBody AdminRegisterDto dto) {
         ldapService.create(dto);
     }
 
-    @PutMapping("/admin/modify/username/{username}/ou/{ou}")
-    public void modifyAdmin(@PathVariable String username, @PathVariable AdminType ou) {
+    @PutMapping("/modify/username/{username}/ou/{ou}")
+    public void modifyRole(@PathVariable String username, @PathVariable AdminType ou) {
         ldapService.modify(username, ou);
     }
 
-    @PostMapping("/admin/get-token")
-    public TokenDto getAdminToken(@RequestBody AdminGetTokenDto dto) {
-        return new TokenDto(jwtTokenUtil.generateToken(dto));
+    @PostMapping("/otp")
+    public String smsValidation(@RequestBody GetOtpDto dto) {
+        return ldapService.smsValidation(dto);
+    }
+    @PostMapping("/login")
+    public String login(@RequestBody LoginDto dto) {
+        return ldapService.login(dto);
+    }
+
+    @PostMapping("/change-password")
+    public void changePassword(@RequestBody ChangePasswordDto dto) {
+        ldapService.changePassword(dto);
+    }
+
+    @PostMapping("forgot-password")
+    public void forgotPassword(@RequestParam String username) {
+        ldapService.forgotPassword(username);
+    }
+
+    @PostMapping("forgot-password-link")
+    public void forgotPasswordMail(@RequestParam String username) {
+        ldapService.sendForgotPasswordLink(username);
     }
 }
