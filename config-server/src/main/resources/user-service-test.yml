@@ -13,6 +13,17 @@ spring:
     bootstrap-servers: kafka:9092
     producer:
       topic: logs
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: atmosferpoc@gmail.com
+    password: EwvAMnTC2NdTXf9
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 
 
@@ -34,3 +45,16 @@ ldap:
 
 jwt:
   secret: atmosfer-poc
+
+# Smtp properties
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: your_username
+  password: your_password
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
