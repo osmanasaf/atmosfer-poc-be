@@ -1,7 +1,7 @@
 package org.codefirst.seed.userservice.dto;
 
 import lombok.Data;
-import org.codefirst.seed.userservice.type.AdminType;
+import org.codefirst.seed.userservice.type.UserRole;
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
@@ -9,7 +9,7 @@ import javax.naming.directory.Attributes;
 @Data
 public class LdapUser {
     private String cn;
-    private AdminType ou;
+    private UserRole ou;
     private String password;
     private String mail;
     public static LdapUser createFromAttrs(Attributes attrs) {
@@ -20,7 +20,7 @@ public class LdapUser {
             byte[] bytes = (byte[]) o;
             String hash = new String(bytes);
             ldapUser.setPassword(hash);
-            ldapUser.setOu(AdminType.valueOf(String.valueOf(attrs.get("description").get())));
+            ldapUser.setOu(UserRole.valueOf(String.valueOf(attrs.get("description").get())));
             ldapUser.setMail(String.valueOf(attrs.get("mail").get()));
         } catch (NamingException e) {
             throw new RuntimeException(e);

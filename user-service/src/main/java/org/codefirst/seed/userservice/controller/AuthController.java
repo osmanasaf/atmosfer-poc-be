@@ -2,10 +2,8 @@ package org.codefirst.seed.userservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.codefirst.seed.userservice.dto.*;
-import org.codefirst.seed.userservice.service.JwtTokenUtil;
-import org.codefirst.seed.userservice.service.KafkaService;
 import org.codefirst.seed.userservice.service.LdapService;
-import org.codefirst.seed.userservice.type.AdminType;
+import org.codefirst.seed.userservice.type.UserRole;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final LdapService ldapService;
-    private final KafkaService kafkaService;
-    private final JwtTokenUtil jwtTokenUtil;
 
     @GetMapping("/exist/{username}")
     public AdminExistDto isUserExist(@PathVariable("username") String username) {
@@ -28,7 +24,7 @@ public class AuthController {
     }
 
     @PutMapping("/modify/username/{username}/ou/{ou}")
-    public void modifyRole(@PathVariable String username, @PathVariable AdminType ou) {
+    public void modifyRole(@PathVariable String username, @PathVariable UserRole ou) {
         ldapService.modify(username, ou);
     }
 

@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.codefirst.seed.userservice.dto.*;
 import org.codefirst.seed.userservice.entity.OneTimePassword;
 import org.codefirst.seed.userservice.entity.PasswordResetToken;
-import org.codefirst.seed.userservice.type.AdminType;
+import org.codefirst.seed.userservice.type.UserRole;
 import org.codefirst.seed.userservice.util.CryptUtil;
 import org.codefirst.seed.userservice.util.RandomGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.filter.AndFilter;
+import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +42,7 @@ public class LdapService {
                 .search("", "cn=" + username, LdapUser::createFromAttrs);
     }
 
-    public AdminType getAdminUserType(String username) {
+    public UserRole getAdminUserType(String username) {
         return search(username).get(0).getOu();
     }
 
@@ -61,12 +63,12 @@ public class LdapService {
         context.setAttributeValue("userPassword", CryptUtil.encode(dto.getPassword()));
         context.setAttributeValue("mail", dto.getMail());
         context.setAttributeValue("mobile", dto.getMsisdn());
-        context.setAttributeValue("description", AdminType.NEW_USER.name());
+        context.setAttributeValue("description", UserRole.NEW_USER.name());
 
         ldapTemplate.bind(context);
     }
 
-    public void modify(String username, AdminType ou) {
+    public void modify(String username, UserRole ou) {
         Name dn = buildUserDn(username);
         DirContextOperations context
                 = ldapTemplate.lookupContext(dn);
@@ -170,5 +172,15 @@ public class LdapService {
           return jwtTokenUtil.generateToken(ldapUser);
         }
         throw new RuntimeException("Bad Credentials");
+    }
+
+    public List<LdapUser> getAllDealerEmployee() {
+        AndFilter filter = new AndFilter();
+        filter.and(new EqualsFilter("ou", "HR"));
+        filter.and(new EqualsFilter("ou", "TECHNICAL"));
+        filter.and(new EqualsFilter("ou", "PRICING"));
+        return ldapTemplate
+                .search("", filter.encode(), LdapUser::createFromAttrs);
+
     }
 }

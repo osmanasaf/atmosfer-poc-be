@@ -1,5 +1,5 @@
 package org.codefirst.seed.userservice.type;
 
-public enum AdminType {
+public enum UserRole {
     NEW_USER, HR, TECHNICAL, PRICING, APPUSER, ADMIN;
 }
