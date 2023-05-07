@@ -2,6 +2,7 @@ package org.atmosfer.seed.userservice.entity;
 
 import lombok.Data;
 import org.atmosfer.seed.userservice.dto.AdminRegisterDto;
+import org.atmosfer.seed.userservice.dto.AppUserRegisterDto;
 import org.atmosfer.seed.userservice.util.RandomGeneratorUtil;
 
 import javax.persistence.Entity;
@@ -36,6 +37,12 @@ public class RegisterRecord {
         this.code = RandomGeneratorUtil.generateOtp();
     }
 
+    public RegisterRecord(AppUserRegisterDto dto) {
+        this.setMail(dto.getEmail());
+        this.setPassword(dto.getPassword());
+        this.code = RandomGeneratorUtil.generateOtp();
+        this.setDate(new Date());
+    }
     public RegisterRecord() {
     }
 }

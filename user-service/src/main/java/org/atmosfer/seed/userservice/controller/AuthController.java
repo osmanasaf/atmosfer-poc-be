@@ -30,14 +30,28 @@ public class AuthController {
         kafkaService.sendMessage("register", dto.getMail(), dto.toString());
     }
 
+    /***/@PostMapping("/app-user/register-first-step")
+    public void registerAppUser(@RequestBody AppUserRegisterDto dto) {
+        userService.registerAppUserPreRecord(dto);
+        kafkaService.sendMessage("register", dto.getEmail(), dto.toString());
+    }
+
     /***/@PutMapping("/register-verification/mail/{mail}/code/{code}")
-    public String verification(@PathVariable String mail, @PathVariable String code) {
+    public String registerVerification(@PathVariable String mail, @PathVariable String code) {
         RegisterRecord registerRecord = userService.registerAdminVerification(mail, code);
         String jwt = userService.generateJwtToken(ldapService.search(mail).get(0));
         userService.deleteRegisterRecord(registerRecord);
         kafkaService.sendMessage("register-verification", mail, code);
         return jwt;
     }
+
+    /***/@PutMapping("/app-user/register-verification/mail/{mail}/code/{code}")
+    public void appUserRegisterVerification(@PathVariable String mail, @PathVariable String code) {
+        RegisterRecord registerRecord = userService.registerAppUserVerification(mail, code);
+        userService.deleteRegisterRecord(registerRecord);
+        kafkaService.sendMessage("register-appUser-verification", mail, code);
+    }
+
     /***/@PostMapping("/login-first-step")
     public void getOtp(@RequestBody GetOtpDto dto) {
         userService.smsValidation(dto);

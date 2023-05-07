@@ -16,7 +16,7 @@ public class UserController {
 
     private final LdapService ldapService;
 
-    @PostMapping("/change-password")
+    /***/@PostMapping("/change-password")
     public void changePassword(@RequestBody ChangePasswordDto dto) {
         ldapService.changePassword(String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal()), dto);
     }

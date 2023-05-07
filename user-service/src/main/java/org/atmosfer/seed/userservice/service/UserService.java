@@ -30,6 +30,14 @@ public class UserService {
         return registerRepository.save(registerRecord);
     }
 
+    public RegisterRecord registerAppUserPreRecord(AppUserRegisterDto dto) {
+        throwIfMailNotFitForRegister(dto.getEmail());
+        RegisterRecord registerRecord = new RegisterRecord(dto);
+        mailService.sendAdminVerificationMail(registerRecord);
+        return registerRepository.save(registerRecord);
+    }
+
+
     public RegisterRecord registerAdminVerification(String mail, String code) {
         RegisterRecord registerRecord = registerRepository.findByMail(mail);
         if (registerRecord == null) {
@@ -39,7 +47,20 @@ public class UserService {
             throw new RuntimeException("Register operation timeout, please try again");
         }
         if (registerRecord.getCode().equals(code)) {
-            ldapService.create(registerRecord);
+            ldapService.createAdmin(registerRecord);
+        } else {
+            throw new RuntimeException("Validation code is not correct");
+        }
+        return registerRecord;
+    }
+
+    public RegisterRecord registerAppUserVerification(String mail, String code) {
+        RegisterRecord registerRecord = registerRepository.findByMail(mail);
+        if (registerRecord == null) {
+            throw new RuntimeException("No Register Record found for email :" + mail);
+        }
+        if (registerRecord.getCode().equals(code)) {
+            ldapService.createAppUser(registerRecord);
         } else {
             throw new RuntimeException("Validation code is not correct");
         }

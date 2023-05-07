@@ -35,7 +35,7 @@ public class LdapService {
         return search(username).get(0).getOu();
     }
 
-    public void create(RegisterRecord registerRecord) {
+    public void createAdmin(RegisterRecord registerRecord) {
         Name dn = buildUserDn(registerRecord.getMail());
         DirContextAdapter context = new DirContextAdapter(dn);
 
@@ -53,6 +53,26 @@ public class LdapService {
         context.setAttributeValue("mail", registerRecord.getMail());
         context.setAttributeValue("mobile", registerRecord.getMsisdn());
         context.setAttributeValue("description", UserRole.NEW_USER.name());
+
+        ldapTemplate.bind(context);
+    }
+
+    public void createAppUser(RegisterRecord registerRecord) {
+        Name dn = buildUserDn(registerRecord.getMail());
+        DirContextAdapter context = new DirContextAdapter(dn);
+
+        context.setAttributeValues(
+                "objectclass",
+                new String[]
+                        { "top",
+                                "person",
+                                "organizationalPerson",
+                                "inetOrgPerson" });
+        context.setAttributeValue("cn", registerRecord.getMail());
+        context.setAttributeValue("sn","unknown");
+        context.setAttributeValue("userPassword", CryptUtil.encode(registerRecord.getPassword()));
+        context.setAttributeValue("mail", registerRecord.getMail());
+        context.setAttributeValue("description", UserRole.APPUSER.name());
 
         ldapTemplate.bind(context);
     }
