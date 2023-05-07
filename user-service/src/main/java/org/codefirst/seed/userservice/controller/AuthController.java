@@ -42,7 +42,7 @@ public class AuthController {
         userService.smsValidation(dto);
         kafkaService.sendMessage("get-otp", dto.getEmail(), dto.toString());
     }
-    @PostMapping("/login-verification")
+    @PutMapping("/login-verification")
     public String login(@RequestBody LoginDto dto) {
         String jwt = userService.login(dto);
         kafkaService.sendMessage("login", dto.getUsername(), dto.toString());
@@ -64,7 +64,7 @@ public class AuthController {
         ldapService.forgotPassword(username);
     }
 
-    @PostMapping("forgot-password-link")
+    @PostMapping("forgot-and-change-password-link")
     public void forgotPasswordMail(@RequestParam String username) {
         ldapService.sendForgotPasswordLink(username);
     }

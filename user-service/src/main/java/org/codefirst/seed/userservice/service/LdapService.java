@@ -147,9 +147,8 @@ public class LdapService {
     public void forgotPassword(String username) {
         LdapUser ldapUser = getLdapUser(username);
         String generatedRandomPassword = RandomGeneratorUtil.generateRandomPassword();
+        modifyPassword(username, generatedRandomPassword);
         mailService.sendForgotPasswordMail(ldapUser.getMail(), generatedRandomPassword);
-        kafkaService.sendMessage("sendNewPasswordLink", null, username);
-        updatePasswordOnLdap(ldapUser.getCn(), CryptUtil.encode(generatedRandomPassword));
     }
 
     public void sendForgotPasswordLink(String username) {

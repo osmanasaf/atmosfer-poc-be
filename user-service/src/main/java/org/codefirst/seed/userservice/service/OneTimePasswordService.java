@@ -6,6 +6,7 @@ import org.codefirst.seed.userservice.repository.OneTimePasswordRepository;
 import org.codefirst.seed.userservice.util.RandomGeneratorUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -24,6 +25,7 @@ public class OneTimePasswordService {
         OneTimePassword oneTimePassword = OneTimePassword
                 .builder()
                 .email(email)
+                .requestDate(new Date())
                 .otp(otp).build();
         oneTimePasswordRepository.save(oneTimePassword);
         return otp;

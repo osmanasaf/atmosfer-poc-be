@@ -21,14 +21,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         httpSecurity.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/auth/register",
-                        "/auth/login",
-                        "/auth/otp",
-                        "/auth/verification/**",
-                        "/auth/forgot-password",
-                        "/auth/forgot-password-link",
-                        "/auth/exist/{username}",
-                        "/auth/change-password",
+                .antMatchers("/auth/**",
                         "/v2/api-docs",
                         "/configuration/ui",
                         "/swagger-resources/**",

@@ -36,13 +36,13 @@ public class UserService {
        if(registerRecord == null) {
            throw new RuntimeException("No Register Record found for email :" + mail);
        }
+       if(!DateUtil.isGivenDateInTheLast2Minutes(registerRecord.getDate())) {
+           throw new RuntimeException("Register operation timeout, please try again");
+       }
        if(registerRecord.getCode().equals(code)) {
            ldapService.create(registerRecord);
        } else {
            throw new RuntimeException("Validation code is not correct");
-       }
-       if(!DateUtil.isGivenDateInTheLast2Minutes(registerRecord.getDate())) {
-           throw new RuntimeException("Register operation timeout, please try again");
        }
        return registerRecord;
    }
