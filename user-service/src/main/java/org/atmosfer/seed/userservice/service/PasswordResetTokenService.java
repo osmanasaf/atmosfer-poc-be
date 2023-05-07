@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.atmosfer.seed.userservice.repository.PasswordResetTokenRepository;
 import org.atmosfer.seed.userservice.dto.LdapUser;
 import org.atmosfer.seed.userservice.entity.PasswordResetToken;
+import org.atmosfer.seed.userservice.util.RandomGeneratorUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ public class PasswordResetTokenService {
     }
 
     public PasswordResetToken createResetPasswordToken(LdapUser ldapUser) {
-        String token = UUID.randomUUID().toString();
+        String token = RandomGeneratorUtil.generateOtp();
         LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(2);
         PasswordResetToken passwordResetToken = PasswordResetToken.builder()
                 .email(ldapUser.getMail())

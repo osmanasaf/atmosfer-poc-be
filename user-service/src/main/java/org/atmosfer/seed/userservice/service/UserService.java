@@ -106,7 +106,7 @@ public class UserService {
     public void sendForgotPasswordLink(String username) {
         LdapUser ldapUser = ldapService.getLdapUser(username);
         PasswordResetToken resetPasswordToken = passwordResetTokenService.createResetPasswordToken(ldapUser);
-        String restPasswordLink = passwordResetTokenService.generateResetPasswordTokenLink(resetPasswordToken.getToken());
+        String restPasswordLink = resetPasswordToken.getToken();
         mailService.sendResetPasswordLink(ldapUser.getMail(), restPasswordLink);
     }
 
