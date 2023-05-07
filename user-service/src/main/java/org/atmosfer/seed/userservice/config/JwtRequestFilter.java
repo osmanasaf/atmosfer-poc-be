@@ -8,8 +8,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.atmosfer.seed.userservice.dto.ErrorDto;
 import org.atmosfer.seed.userservice.service.JwtTokenUtil;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,27 +25,53 @@ import io.jsonwebtoken.ExpiredJwtException;
 @RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtTokenUtil jwtTokenUtil;
-
+    ObjectMapper objectMapper = new ObjectMapper();
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         final String requestTokenHeader = request.getHeader("Authorization");
 
-        String jwtToken;
+        String jwtToken, email;
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             try {
-                jwtTokenUtil.getUsernameFromToken(jwtToken);
+                email = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
-                System.out.println("Unable to get JWT Token");
+                sendError(response, "Unable to get JWT Token");
+                return;
             } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token has expired");
+                sendError(response, "JWT Token has expired");
+                return;
+            } catch (Exception e) {
+                sendError(response, "wrong jwt");
+                return;
             }
         } else {
-            logger.warn("JWT Token does not begin with Bearer String");
+            sendError(response, "JWT Token does not begin with Bearer String");
+            return;
         }
-
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(email, null, null));
         chain.doFilter(request, response);
+    }
+
+    private void sendError(HttpServletResponse res, String errMssg) {
+        ErrorDto dto = new ErrorDto();
+        dto.setErrorMessage(errMssg);
+        dto.setResultCode(HttpStatus.BAD_REQUEST.value());
+        dto.setResult(HttpStatus.BAD_REQUEST.name());
+        res.setStatus(HttpStatus.BAD_REQUEST.value());
+        res.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+        try {
+            res.getOutputStream().print(objectMapper.writeValueAsString(dto));
+            res.flushBuffer();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

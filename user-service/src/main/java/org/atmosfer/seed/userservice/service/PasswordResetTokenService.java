@@ -33,6 +33,12 @@ public class PasswordResetTokenService {
         return passwordResetTokenRepository.save(passwordResetToken);
     }
 
+    public PasswordResetToken findByToken(String token) {
+        return passwordResetTokenRepository.findByToken(token);
+    }
+    public void delete(PasswordResetToken entity) {
+        passwordResetTokenRepository.delete(entity);
+    }
     public String generateResetPasswordTokenLink(String token) {
         return baseApiUrl+  "/reset-password?token=" + token;
     }
