@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PositionRepository extends CrudRepository<Position, String > {
+public interface PositionRepository extends CrudRepository<Position, String> {
 
     List<Position> findAllByStatus(PositionStatus positionStatus);
 
