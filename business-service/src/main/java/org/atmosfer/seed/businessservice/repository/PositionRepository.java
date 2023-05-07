@@ -10,7 +10,6 @@ import java.util.List;
 @Repository
 public interface PositionRepository extends CrudRepository<Position, String > {
 
-    List<Position> findAllByPositionStatus(PositionStatus positionStatus);
+    List<Position> findAllByStatus(PositionStatus positionStatus);
 
-    List<Position> findAllByPositionStatusNot(PositionStatus positionStatus);
 }

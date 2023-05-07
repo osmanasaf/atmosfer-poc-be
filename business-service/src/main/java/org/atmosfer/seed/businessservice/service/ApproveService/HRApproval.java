@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
 @Service
-public class HRApproval extends Approval {
+public class HRApproval {
 
     private final CheckUserRoleUtil checkUserRoleUtil;
 
@@ -16,13 +16,4 @@ public class HRApproval extends Approval {
         return checkUserRoleUtil.isHrUser();
     }
 
-    public void approve(Position position) {
-        isUserAuthorized();
-        position.setHrApprovalStatus(ApprovalStatus.APPROVED);
-    }
-
-    public void reject(Position position) {
-        isUserAuthorized();
-        position.setHrApprovalStatus(ApprovalStatus.REJECTED);
-    }
 }

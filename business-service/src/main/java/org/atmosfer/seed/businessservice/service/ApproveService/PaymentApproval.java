@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
 @Service
-public class PaymentApproval extends Approval {
+public class PaymentApproval {
 
 
     private final CheckUserRoleUtil checkUserRoleUtil;
@@ -16,13 +16,6 @@ public class PaymentApproval extends Approval {
     public boolean isUserAuthorized() {
        return checkUserRoleUtil.isPricingUser();
     }
-    public void approve(Position position) {
-        isUserAuthorized();
-        position.setFinanceApprovalStatus(ApprovalStatus.APPROVED);
-    }
 
-    public void reject(Position position) {
-        isUserAuthorized();
-        position.setFinanceApprovalStatus(ApprovalStatus.REJECTED);
-    }
+
 }

@@ -1,4 +1,4 @@
-package org.atmosfer.seed.userservice.dto;
+package org.atmosfer.seed.businessservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

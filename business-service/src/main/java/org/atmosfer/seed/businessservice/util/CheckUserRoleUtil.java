@@ -32,7 +32,6 @@ public class CheckUserRoleUtil {
     private boolean checkUserRole(UserRole userRole){
         UserRole currentUserRole = jwtUtils.getCurrentUserRole();
         if (currentUserRole == null) throw new RuntimeException("User role is null");
-        if(!currentUserRole.equals(userRole)) throw new RuntimeException("User role is not authorized");
-        return true;
+        return currentUserRole.equals(userRole);
     }
 }

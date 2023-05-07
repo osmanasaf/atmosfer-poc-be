@@ -11,13 +11,12 @@ import org.atmosfer.seed.userservice.util.RandomGeneratorUtil;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.filter.AndFilter;
-import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 
 import javax.naming.Name;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,7 @@ public class LdapService {
 
     public List<LdapUser> search(String username) {
         return ldapTemplate
-                .search("", "cn=" + username, LdapUser::createFromAttrs);
+                .search("ou=newusers", "cn=" + username, LdapUser::createFromAttrs);
     }
 
     public UserRole getAdminUserType(String username) {
@@ -155,12 +154,14 @@ public class LdapService {
         return dto;
     }
     public List<LdapUser> getAllDealerEmployee() {
-        AndFilter filter = new AndFilter();
-        filter.and(new EqualsFilter("ou", "HR"));
-        filter.and(new EqualsFilter("ou", "TECHNICAL"));
-        filter.and(new EqualsFilter("ou", "PRICING"));
-        return ldapTemplate
-                .search("", filter.encode(), LdapUser::createFromAttrs);
+        List<LdapUser> users = search("*");
+        return users.stream().filter(ldapUser ->
+                ldapUser.getOu().equals(UserRole.NEW_USER) ||
+                ldapUser.getOu().equals(UserRole.HR) ||
+                ldapUser.getOu().equals(UserRole.TECHNICAL) ||
+                ldapUser.getOu().equals(UserRole.PRICING) ||
+                ldapUser.getOu().equals(UserRole.ADMIN)).collect(Collectors.toList());
+
 
     }
 }

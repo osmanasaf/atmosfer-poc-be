@@ -17,9 +17,8 @@ public class Position implements Serializable {
     private String name;
     private String detail;
     private PositionStatus status;
-    private ApprovalStatus hrApprovalStatus;
-    private ApprovalStatus techinalApprovalStatus;
-    private ApprovalStatus financeApprovalStatus;
+    private String city;
+
     //elimizde user entity olmadığı için user id bıraktım feign client ile user servisten user bilgileri alınabilir
     private List<ApplyPositionDto> applicant;
 

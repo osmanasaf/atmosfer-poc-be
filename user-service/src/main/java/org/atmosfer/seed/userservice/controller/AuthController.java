@@ -64,11 +64,6 @@ public class AuthController {
         return jwt;
     }
 
-    @PutMapping("/modify/username/{username}/ou/{ou}")
-    public void modifyRole(@PathVariable String username, @PathVariable UserRole ou) {
-        ldapService.modifyRole(username, ou);
-    }
-
     @PostMapping("forgot-password")
     public void forgotPassword(@RequestParam String username) {
         ldapService.forgotPassword(username);

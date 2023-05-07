@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
 @Service
-public class TechnicalApproval extends Approval {
+public class TechnicalApproval {
 
 
     private final CheckUserRoleUtil checkUserRoleUtil;
@@ -17,13 +17,7 @@ public class TechnicalApproval extends Approval {
         return checkUserRoleUtil.isTechnicalUser();
     }
 
-    public void approve(Position position){
-        isUserAuthorized();
-        position.setTechinalApprovalStatus(ApprovalStatus.APPROVED);
-    }
 
-    public void reject(Position position) {
-        isUserAuthorized();
-        position.setTechinalApprovalStatus(ApprovalStatus.REJECTED);
-    }
+
+
 }

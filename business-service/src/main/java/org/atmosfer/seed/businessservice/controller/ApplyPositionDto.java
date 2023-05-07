@@ -2,6 +2,8 @@ package org.atmosfer.seed.businessservice.controller;
 
 import lombok.Builder;
 import lombok.Data;
+import org.atmosfer.seed.businessservice.type.ApprovalStatus;
+import org.atmosfer.seed.businessservice.type.PositionStatus;
 import org.atmosfer.seed.businessservice.type.WorkType;
 
 @Data
@@ -14,4 +16,7 @@ public class ApplyPositionDto {
     private String phone;
     private String city;
     private WorkType workType;
+    private ApprovalStatus hrApprovalStatus;
+    private ApprovalStatus techinalApprovalStatus;
+    private ApprovalStatus financeApprovalStatus;
 }
