@@ -21,18 +21,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         httpSecurity.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/authenticate",
-                        "/auth/register",
-                        "/auth/modify/**",
+                .antMatchers("/auth/register",
                         "/auth/login",
                         "/auth/otp",
+                        "/auth/verification/**",
                         "/auth/forgot-password",
                         "/auth/forgot-password-link",
                         "/auth/exist/{username}",
                         "/auth/change-password",
-                        "/",
+                        "/v2/api-docs",
+                        "/configuration/ui",
+                        "/swagger-resources/**",
+                        "/configuration/security",
                         "/swagger-ui.html",
-                        "/swagger-resources/**"
+                        "/webjars/**"
                         ).permitAll().
                 anyRequest().authenticated().and().
                 exceptionHandling().authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))

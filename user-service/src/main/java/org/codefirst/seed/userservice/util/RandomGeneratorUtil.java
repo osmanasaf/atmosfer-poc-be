@@ -3,7 +3,7 @@ package org.codefirst.seed.userservice.util;
 import java.security.SecureRandom;
 import java.util.Random;
 
-public class RandomGenerator {
+public class RandomGeneratorUtil {
     
     private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int PASSWORD_LENGTH = 10;

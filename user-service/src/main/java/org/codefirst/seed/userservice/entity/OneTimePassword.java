@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
+
 @Data
 @Entity
 @NoArgsConstructor
@@ -15,11 +17,7 @@ public class OneTimePassword {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-
-    @Column
     private String email;
-
-    @Column
-    String otp;
-
+    private String otp;
+    private Date requestDate;
 }

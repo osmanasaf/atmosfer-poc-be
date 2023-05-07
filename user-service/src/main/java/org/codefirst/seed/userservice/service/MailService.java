@@ -1,6 +1,7 @@
 package org.codefirst.seed.userservice.service;
 
 import org.codefirst.seed.userservice.dto.EmailDetailsDto;
+import org.codefirst.seed.userservice.entity.RegisterRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -18,16 +19,7 @@ public class MailService {
     @Value("${spring.mail.username}")
     private String sender;
 
-    public void testMail(){
-        EmailDetailsDto emailDetailsDto = EmailDetailsDto.builder()
-                .recipient("asaf@codefirst.io")
-                .subject("Test")
-                .msgBody("Test")
-                .build();
-        sendMail(emailDetailsDto);
-    }
-
-    public String sendMail(EmailDetailsDto details) {
+    public void sendMail(EmailDetailsDto details) {
         try {
             SimpleMailMessage mailMessage
                     = new SimpleMailMessage();
@@ -36,9 +28,8 @@ public class MailService {
             mailMessage.setText(details.getMsgBody());
             mailMessage.setSubject(details.getSubject());
             mailSender.send(mailMessage);
-            return "Mail Sent Successfully...";
         } catch (Exception e) {
-            return "Error while Sending Mail";
+            throw new RuntimeException("Mail could not send", e);
         }
     }
 
@@ -56,6 +47,23 @@ public class MailService {
                 .recipient(mail)
                 .subject("Şifre sıfırlama")
                 .msgBody("Şifrenizi sıfırlamak için linke tıklayınız: " + restPasswordLink)
+                .build();
+        sendMail(emailDetailsDto);
+    }
+
+    public void sendAdminVerificationMail(RegisterRecord registerRecord) {
+        EmailDetailsDto emailDetailsDto = EmailDetailsDto.builder()
+                .recipient(registerRecord.getMail())
+                .subject("Hesap Doğrulama")
+                .msgBody("Hesabınızı doğrulamak için linke tıklayınız: " + registerRecord.getCode())
+                .build();
+        sendMail(emailDetailsDto);
+    }
+
+    public void sendOtpMail(String mail, String otp) {
+        EmailDetailsDto emailDetailsDto = EmailDetailsDto.builder().recipient(mail)
+                .subject("Otp")
+                .msgBody("Hesabınıza girmek için bu kodu kullanabilirsiniz: " + otp)
                 .build();
         sendMail(emailDetailsDto);
     }

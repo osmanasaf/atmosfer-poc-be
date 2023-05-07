@@ -4,11 +4,9 @@ import lombok.Data;
 
 @Data
 public class AdminRegisterDto {
-    private String username;
     private String name;
     private String surname;
     private String mail;
     private String msisdn;
     private String password;
-
 }

@@ -2,11 +2,11 @@ package org.codefirst.seed.userservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.codefirst.seed.userservice.dto.*;
-import org.codefirst.seed.userservice.entity.OneTimePassword;
 import org.codefirst.seed.userservice.entity.PasswordResetToken;
+import org.codefirst.seed.userservice.entity.RegisterRecord;
 import org.codefirst.seed.userservice.type.UserRole;
 import org.codefirst.seed.userservice.util.CryptUtil;
-import org.codefirst.seed.userservice.util.RandomGenerator;
+import org.codefirst.seed.userservice.util.RandomGeneratorUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -21,7 +21,6 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +30,7 @@ public class LdapService {
     private final MailService mailService;
     private final PasswordResetTokenService passwordResetTokenService;
     private final KafkaService kafkaService;
-    private final OneTimePasswordService oneTimePasswordService;
-    private final JwtTokenUtil jwtTokenUtil;
+
 
     @Value("${ldap.partitionSuffix}")
     private String ldapSuffix;
@@ -46,8 +44,8 @@ public class LdapService {
         return search(username).get(0).getOu();
     }
 
-    public void create(AdminRegisterDto dto) {
-        Name dn = buildUserDn(dto.getUsername());
+    public void create(RegisterRecord registerRecord) {
+        Name dn = buildUserDn(registerRecord.getMail());
         DirContextAdapter context = new DirContextAdapter(dn);
 
         context.setAttributeValues(
@@ -57,18 +55,18 @@ public class LdapService {
                                 "person",
                                 "organizationalPerson",
                                 "inetOrgPerson" });
-        context.setAttributeValue("cn", dto.getUsername());
-        context.setAttributeValue("givenname", dto.getName());
-        context.setAttributeValue("sn", dto.getSurname());
-        context.setAttributeValue("userPassword", CryptUtil.encode(dto.getPassword()));
-        context.setAttributeValue("mail", dto.getMail());
-        context.setAttributeValue("mobile", dto.getMsisdn());
+        context.setAttributeValue("cn", registerRecord.getMail());
+        context.setAttributeValue("givenname", registerRecord.getName());
+        context.setAttributeValue("sn", registerRecord.getSurname());
+        context.setAttributeValue("userPassword", CryptUtil.encode(registerRecord.getPassword()));
+        context.setAttributeValue("mail", registerRecord.getMail());
+        context.setAttributeValue("mobile", registerRecord.getMsisdn());
         context.setAttributeValue("description", UserRole.NEW_USER.name());
 
         ldapTemplate.bind(context);
     }
 
-    public void modify(String username, UserRole ou) {
+    public void modifyRole(String username, UserRole ou) {
         Name dn = buildUserDn(username);
         DirContextOperations context
                 = ldapTemplate.lookupContext(dn);
@@ -81,6 +79,22 @@ public class LdapService {
                                         "organizationalPerson",
                                         "inetOrgPerson" });
         context.setAttributeValue("description", ou.name());
+
+        ldapTemplate.modifyAttributes(context);
+    }
+    public void modifyPassword(String username, String newPassword) {
+        Name dn = buildUserDn(username);
+        DirContextOperations context
+                = ldapTemplate.lookupContext(dn);
+
+        context.setAttributeValues
+                ("objectclass",
+                        new String[]
+                                { "top",
+                                        "person",
+                                        "organizationalPerson",
+                                        "inetOrgPerson" });
+        context.setAttributeValue("userPassword", CryptUtil.encode(newPassword));
 
         ldapTemplate.modifyAttributes(context);
     }
@@ -124,7 +138,6 @@ public class LdapService {
     }
 
     private Name buildUserDn(String username) {
-        //neden rolü ou ile belirlemiyoruz??
         return LdapNameBuilder.newInstance()
                 .add("ou", "newusers")
                 .add("cn", username)
@@ -133,7 +146,7 @@ public class LdapService {
 
     public void forgotPassword(String username) {
         LdapUser ldapUser = getLdapUser(username);
-        String generatedRandomPassword = RandomGenerator.generateRandomPassword();
+        String generatedRandomPassword = RandomGeneratorUtil.generateRandomPassword();
         mailService.sendForgotPasswordMail(ldapUser.getMail(), generatedRandomPassword);
         kafkaService.sendMessage("sendNewPasswordLink", null, username);
         updatePasswordOnLdap(ldapUser.getCn(), CryptUtil.encode(generatedRandomPassword));
@@ -155,25 +168,6 @@ public class LdapService {
         //kafkaService.sendMessage("isAdminExist", null, username);
         return dto;
     }
-
-    public String smsValidation(GetOtpDto dto) {
-        LdapUser ldapUser = getLdapUser(dto.getEmail());
-        if(CryptUtil.matches(dto.getPassword(), ldapUser.getPassword())) {
-            return oneTimePasswordService.createOTP(ldapUser.getMail());
-        }
-        throw new RuntimeException("Bad Credentials");
-    }
-
-    public String login(LoginDto dto) {
-        LdapUser ldapUser = getLdapUser(dto.getUsername());
-        Optional<OneTimePassword> tokenByEmail = oneTimePasswordService.getTokenByEmail(ldapUser.getMail());
-        boolean allCredentialsAreCorrect = CryptUtil.matches(dto.getPassword(), ldapUser.getPassword()) && tokenByEmail.isPresent() && tokenByEmail.get().getOtp().equals(dto.getOtp());
-        if(allCredentialsAreCorrect) {
-          return jwtTokenUtil.generateToken(ldapUser);
-        }
-        throw new RuntimeException("Bad Credentials");
-    }
-
     public List<LdapUser> getAllDealerEmployee() {
         AndFilter filter = new AndFilter();
         filter.and(new EqualsFilter("ou", "HR"));

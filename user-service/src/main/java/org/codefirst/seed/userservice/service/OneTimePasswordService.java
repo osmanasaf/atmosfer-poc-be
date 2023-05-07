@@ -3,7 +3,7 @@ package org.codefirst.seed.userservice.service;
 import lombok.RequiredArgsConstructor;
 import org.codefirst.seed.userservice.entity.OneTimePassword;
 import org.codefirst.seed.userservice.repository.OneTimePasswordRepository;
-import org.codefirst.seed.userservice.util.RandomGenerator;
+import org.codefirst.seed.userservice.util.RandomGeneratorUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,17 +15,25 @@ public class OneTimePasswordService {
     private final OneTimePasswordRepository oneTimePasswordRepository;
 
     public String createOTP(String email){
-        String otp = RandomGenerator.generateOtp();
+        OneTimePassword oneTimePassword1 = getTokenByEmail(email);
+        if (oneTimePassword1 != null) {
+            oneTimePasswordRepository.delete(oneTimePassword1);
+        }
+
+        String otp = RandomGeneratorUtil.generateOtp();
         OneTimePassword oneTimePassword = OneTimePassword
                 .builder()
                 .email(email)
                 .otp(otp).build();
-        getTokenByEmail(email).ifPresent(oneTimePasswordRepository::delete);
         oneTimePasswordRepository.save(oneTimePassword);
         return otp;
     }
 
-    public Optional<OneTimePassword> getTokenByEmail(String email){
+    public OneTimePassword getTokenByEmail(String email){
         return oneTimePasswordRepository.findByEmail(email);
+    }
+
+    public void delete(OneTimePassword oneTimePassword) {
+        oneTimePasswordRepository.delete(oneTimePassword);
     }
 }
