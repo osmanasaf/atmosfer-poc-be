@@ -33,3 +33,6 @@ redis:
 
 jwt:
   secret: atmosfer-poc
+
+base:
+  url: http://localhost:5173

@@ -47,4 +47,4 @@ jwt:
   secret: atmosfer-poc
 
 base:
-  url: http://localhost:9001
+  url: http://localhost:5173
