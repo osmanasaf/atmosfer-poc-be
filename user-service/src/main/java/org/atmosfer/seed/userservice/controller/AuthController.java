@@ -6,7 +6,6 @@ import org.atmosfer.seed.userservice.entity.RegisterRecord;
 import org.atmosfer.seed.userservice.service.KafkaService;
 import org.atmosfer.seed.userservice.service.LdapService;
 import org.atmosfer.seed.userservice.service.UserService;
-import org.atmosfer.seed.userservice.type.UserRole;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -72,10 +71,12 @@ public class AuthController {
     /***/@PostMapping("forgot-and-change-password-link-first-step")
     public void forgotPasswordMail(@RequestParam String username) {
         userService.sendForgotPasswordLink(username);
+        kafkaService.sendMessage("password-forgot", username, null);
     }
 
     /***/@PutMapping("change-password/token/{token}")
     public void changePasswordWithToken(@RequestBody ChangePasswordDto dto, @PathVariable String token) {
         userService.changePasswordWithToken(dto, token);
+        kafkaService.sendMessage("change-password", null, dto.toString());
     }
 }

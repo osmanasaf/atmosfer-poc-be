@@ -6,7 +6,17 @@ spring:
     bootstrap-servers: kafka:9092
     producer:
       topic: logs
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: atmosferpoc@gmail.com
+    password: fvlugmakqudtjbds
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 # Discovery Server Access
 eureka:
   client:

@@ -21,6 +21,9 @@ public class PositionApply {
     @Indexed
     private String positionId;
     private ApprovalStatus hrApprovalStatus;
+    private String hrApprovalMessage;
     private ApprovalStatus techinalApprovalStatus;
+    private String techinalApprovalMessage;
     private ApprovalStatus financeApprovalStatus;
+    private String financeApprovalMessage;
 }

@@ -28,6 +28,10 @@ public class PositionService {
         return positionRepository.findById(id).orElseThrow(() -> new RuntimeException("Position not found"));
     }
 
+    public PositionApply getPositionApplyById(String positionApplyId) {
+        return positionApplyRepository.findById(positionApplyId).orElseThrow(() -> new RuntimeException("Position Apply not found"));
+    }
+
     public void changePositionStatus(String id, PositionStatus status) {
         if (!checkUserRoleUtil.isAdminUser()) {
             throw new RuntimeException("Not Allowed");
@@ -93,7 +97,6 @@ public class PositionService {
         position.setWorkType(dto.getWorkType());
         positionRepository.save(position);
     }
-
     public Integer getApplicantCount(String positionId) {
         List<PositionApply> applies = positionApplyRepository.findAllByPositionId(positionId);
         if (applies != null) {
@@ -101,8 +104,20 @@ public class PositionService {
         }
         return 0;
     }
-
     public List<PositionApply> getPositionApplies(String positionId) {
         return positionApplyRepository.findAllByPositionId(positionId);
+    }
+    public List<PositionApply> getPositionAppliesTechnical(String positionId) {
+        return positionApplyRepository.findAllByPositionId(positionId).stream()
+                .filter(positionApply -> positionApply.getHrApprovalStatus().equals(ApprovalStatus.APPROVED))
+                .collect(Collectors.toList());
+    }
+    public List<PositionApply> getPositionAppliesFinance(String positionId) {
+        return positionApplyRepository.findAllByPositionId(positionId).stream()
+                .filter(positionApply -> positionApply.getTechinalApprovalStatus().equals(ApprovalStatus.APPROVED))
+                .collect(Collectors.toList());
+    }
+    public void savePositionApply(PositionApply entity) {
+        positionApplyRepository.save(entity);
     }
 }
